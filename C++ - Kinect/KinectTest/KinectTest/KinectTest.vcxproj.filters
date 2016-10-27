@@ -36,7 +36,7 @@
     <ClInclude Include="Bitmask.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="main.h">
+    <ClInclude Include="SerialThread.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
@@ -54,6 +54,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialThread.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

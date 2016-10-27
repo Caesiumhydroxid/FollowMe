@@ -10,9 +10,10 @@
 #include <Windows.h>
 #include<serial\serial.h>
 #include "main.h"
+#include"SerialThread.h"
 
 
-void writeConfig(serial::Serial &ser, int lSpeed, int rSpeed, bool lDir, bool rDir, bool br)
+void writeConfig(SerialThread &thread, int lSpeed, int rSpeed, bool lDir, bool rDir, bool br)
 {
 	uint8_t data[] = {
 		0xAA,
@@ -25,7 +26,7 @@ void writeConfig(serial::Serial &ser, int lSpeed, int rSpeed, bool lDir, bool rD
 	data[1] = lSpeed;
 	data[3] = rSpeed;
 	data[5] = (rDir&0x1) | (lDir&0x1) << 1 | (br&0x1) << 2;
-	ser.write(data,(size_t) 6);
+	thread.sendInQueue(data, 6);
 }
 void main()
 {
@@ -48,21 +49,9 @@ void main()
 	sf::Text text;
 	text.setFont(font);
 	sf::Sprite spr;
-	serial::Serial arduini;
-	try
-	{
-		
-		arduini.setStopbits(serial::stopbits_one);
-		arduini.setFlowcontrol(serial::flowcontrol_none);
-		arduini.setPort("COM7");
-		arduini.setBaudrate(115200);
-		arduini.open();
-	}
-	catch (serial::SerialException e)
-	{
-		std::cerr << e.what();
-	}
-
+	SerialThread serThread("Arduino Mega");
+	std::thread thr(std::ref(serThread));
+	thr.detach();
 	while (rend.isOpen())
 	{
 		sf::Event evt;
@@ -72,13 +61,6 @@ void main()
 			{
 				rend.close();
 			}
-		}
-
-		if (arduini.available())
-		{
-			uint8_t buff;
-			arduini.read(&buff, 1);
-			std::cout << buff;
 		}
 		//spr.setTexture(*kinect.getCurrentDepthTexture());
 		Skeleton* skel = kinect.getCurrentSkeletons();
@@ -130,7 +112,7 @@ void main()
 					leftSpeed = 0;
 					rightSpeed = 0;
 				}
-				writeConfig(arduini, leftSpeed, rightSpeed, rightDir, leftDir, br);
+				writeConfig(serThread, leftSpeed, rightSpeed, rightDir, leftDir, br);
 				std::cout << "lspeed" << leftSpeed << " rspeed" << rightSpeed << "break" << br << std::endl;
 				for (int ii = 0; ii < 25; ii++)
 				{
